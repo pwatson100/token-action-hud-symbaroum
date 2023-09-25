@@ -66,12 +66,12 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 							case "item":
 								{
 									const actorItem = actor.items.get(actionId);
+									if (actionId == game.symbaroum.config.noArmorID || actorItem.type == "armor") {
+										return await this.#handleUArmorAction(event, actor, actionId, actorItem);
+									}
 									switch (actorItem.type) {
 										case "weapon":
 											await this.#handleWeaponAction(event, actor, actionId, actorItem);
-											break;
-										case "armor":
-											await this.#handleUArmorAction(event, actor, actionId, actorItem);
 											break;
 										default:
 											await this.doRenderItem(this.actor, actionId);
