@@ -1,0 +1,62 @@
+{
+	"id": "token-action-hud-symbaroum",
+	"title": "Token Action HUD for Symbaroum RPG",
+	"description": "Token Action HUD is a repositionable HUD of actions for a selected token",
+	"authors": [{ "name": "Paul Watson" }, { "name": "Bithir" }, { "name": "Khaali" }],
+	"url": "https://github.com/pwatson100/token-action-hud-symbaroum",
+	"flags": {},
+	"version": "0.0.1",
+	"compatibility": {
+		"minimum": "10",
+		"verified": "11"
+	},
+	"esmodules": ["./scripts/init.js"],
+	"scripts": [],
+	"styles": [],
+	"languages": [
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "languages/en.json"
+		}
+	],
+	"packs": [],
+	"relationships": {
+		"systems": [
+			{
+				"id": "symbaroum",
+				"type": "system",
+				"compatibility": [
+					{
+						"minimum": "4.2.1",
+						"verified": "4.2.1"
+					}
+				]
+			}
+		],
+		"requires": [
+			{
+				"id": "token-action-hud-core",
+				"type": "module",
+				"compatibility": [
+					{
+						"minimum": "1.4.8",
+						"maximum": "1.4",
+						"verified": "1.4.18"
+					}
+				]
+			}
+		],
+		"optional": [],
+		"flags": {
+			"optional": []
+		}
+	},
+	"socket": false,
+	"manifest": "This is auto replaced",
+	"download": "This is auto replaced",
+	"readme": "https://github.com/pwatson100/token-action-hud-symbaroum#readme",
+	"protected": false,
+	"coreTranslation": false,
+	"library": false
+}
