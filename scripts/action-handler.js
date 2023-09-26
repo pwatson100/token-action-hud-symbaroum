@@ -70,6 +70,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				this.#buildAbilities(),
 				this.#buildMysticalPowers(),
 				this.#buildInventory(),
+				this.#buildArmor(),
 				this.#buildToughness(),
 				this.#buildTempCorruption(),
 			]);
@@ -141,7 +142,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			for (const [itemId, itemData] of this.items) {
 				const type = itemData.type;
 
-				if (type === "weapon" || type === "armor" || type === "equipment") {
+				if (type === "weapon" || type === "equipment") {
 					const typeMap = inventoryMap.get(type) ?? new Map();
 					typeMap.set(itemId, itemData);
 					inventoryMap.set(type, typeMap);
@@ -179,6 +180,34 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 					this.addActions(actions, groupData);
 				}
 			}
+		}
+
+		async #buildArmor() {
+			const actionTypeId = "item";
+			const type = "armor";
+			const groupId = ITEM_TYPE[type]?.groupId;
+			const groupData = { id: groupId, type: "system" };
+			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
+			const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${this.actor.system.combat.name}`;
+			const itemId = this.actor.system.combat.id;
+			const name = this.actor.system.combat.name;
+			const img = this.actor.system.combat.img;
+			const encodedValue = [actionTypeId, this.actor.system.combat.id].join(this.delimiter);
+			const typeMap = new Map();
+			const itemData = duplicate(this.actor.system.combat);
+			itemData.type = type;
+			typeMap.set(itemId, itemData);
+
+			const actions = [...typeMap].map(([itemId, itemData]) => {
+				return {
+					itemId,
+					name,
+					img,
+					listName,
+					encodedValue,
+				};
+			});
+			this.addActions(actions, groupData);
 		}
 
 		async #buildTraits() {
