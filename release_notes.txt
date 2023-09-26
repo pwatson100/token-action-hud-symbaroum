@@ -1,2 +1,10 @@
 Version 1.0.0
 Initial release
+
+Versions 0.0.1
+Initial build
+No Armor rolls issue corrected
+HUD only displays active weapons, armor, artifacts & equipment unless "Display Active" is selected in the TAH config. 
+Tooltips added for Toughness and Corruption listings (English only).
+Put in defensive code for traits/powers/mystical Powers not defined (or abbreviated name) in config.traitsList config.abilitiesList & config.powersList.
+

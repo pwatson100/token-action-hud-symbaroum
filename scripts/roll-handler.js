@@ -28,7 +28,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				return this.doRenderItem(this.actor, actionId);
 			}
 
-			const knownCharacters = ["character", "synthetic", "creature"];
+			const knownCharacters = ["player", "monster"];
 
 			// If single actor is selected
 			if (this.actor) {
@@ -174,6 +174,13 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			actor.rollWeapon(usedItem[0]);
 		}
 
+		/**
+		 * Handle Attribute action
+		 * @private
+		 * @param {object} event    The event
+		 * @param {object} actor    The actor
+		 * @param {string} actionId The action id
+		 */
 		async #adjustAttribute(actor, property, valueName) {
 			let value = actor.system.health[property][valueName];
 			let max = actor.system.health[property].max;
@@ -192,7 +199,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		}
 
 		/**
-		 * Handle Attribute action
+		 * Handle item action
 		 * @private
 		 * @param {object} event    The event
 		 * @param {object} actor    The actor

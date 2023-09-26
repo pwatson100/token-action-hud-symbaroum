@@ -76,18 +76,6 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			]);
 		}
 
-		// async #buildMonsterActions(actor) {
-		// 	// debugger;
-		// 	await Promise.all([
-		// 		this.#buildAttributes(),
-		// 		this.#buildTraits(),
-		// 		this.#buildAbilities(),
-		// 		this.#buildMysticalPowers(),
-		// 		this.#buildInventory(),
-		// 		this.#buildToughness(),
-		// 	]);
-		// }
-
 		async #buildMultipleTokenActions() {}
 
 		async #buildAttributes() {
@@ -105,12 +93,10 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				.map((attributes) => {
 					try {
 						const id = attributes[0];
-						// const abbreviatedName = id.charAt(0).toUpperCase() + id.slice(1);
 						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.attributeLabels[id])}` + " " + "-" + " " + this.actor.system.attributes[id].value;
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
 						const listName = `${actionTypeName}${game.symbaroum.config.attributes[id]}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
-						// const mod = attributes[id].total
 						// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.LEFTCLICKTOROLL");
 						return {
 							id,
@@ -140,9 +126,15 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const inventoryMap = new Map();
 
 			for (const [itemId, itemData] of this.items) {
-				const type = itemData.type;
+				let type = itemData.type;
 
-				if (type === "weapon" || type === "equipment") {
+				if (
+					((type === "weapon" || type === "equipment") && itemData.system?.isActive) ||
+					((type === "weapon" || type === "equipment") && this.displayUnequipped)
+				) {
+					if (itemData.system?.isArtifact || itemData.system?.isArtifact === "artifact") {
+						type = "artifact";
+					}
 					const typeMap = inventoryMap.get(type) ?? new Map();
 					typeMap.set(itemId, itemData);
 					inventoryMap.set(type, typeMap);
@@ -223,14 +215,20 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 					try {
 						const lookupId = trait[1].name.toLowerCase().replace(/\s/g, "");
 						const id = trait[1].name;
-						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.traitsList[lookupId])}`;
+						let name = `${coreModule.api.Utils.i18n(game.symbaroum.config.traitsList[lookupId])}`;
+						if (name === "undefined") {
+							name = trait[1].name;
+						}
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
 						const listName = `${actionTypeName}${coreModule.api.Utils.i18n(game.symbaroum.config.traitsList[lookupId])}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
+						const img = coreModule.api.Utils.getImage(trait[1].img);
+
 						return {
 							id,
 							name,
 							encodedValue,
+							img,
 							listName,
 							// tooltip,
 						};
@@ -252,6 +250,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const actionType = "ability";
 			// Get traits
 			const abilities = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
+
 			// Exit if there are no abilities with scripts
 			if (abilities.length === 0) return;
 
@@ -261,14 +260,19 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 					try {
 						const lookupId = ability[1].name.toLowerCase().replace(/\s/g, "");
 						const id = ability[1].name;
-						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
+						let name = `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
+						if (name === "undefined") {
+							name = ability[1].name;
+						}
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
 						const listName = `${actionTypeName}${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
+						const img = coreModule.api.Utils.getImage(ability[1].img);
 						return {
 							id,
 							name,
 							encodedValue,
+							img,
 							listName,
 							// tooltip,
 						};
@@ -298,14 +302,19 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 					try {
 						const lookupId = power[1].name.toLowerCase().replace(/\s/g, "");
 						const id = power[1].name;
-						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.powersList[lookupId])}`;
+						let name = `${coreModule.api.Utils.i18n(game.symbaroum.config.powersList[lookupId])}`;
+						if (name === "undefined") {
+							name = power[1].name;
+						}
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
 						const listName = `${actionTypeName}${coreModule.api.Utils.i18n(game.symbaroum.config.powersList[lookupId])}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
+						const img = coreModule.api.Utils.getImage(power[1].img);
 						return {
 							id,
 							name,
 							encodedValue,
+							img,
 							listName,
 							// tooltip,
 						};
@@ -335,14 +344,14 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
 			const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${name}`;
 			const encodedValue = [actionTypeId, id].join(this.delimiter);
-			// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.ConButtons");
+			const tooltip = coreModule.api.Utils.i18n("tokenActionHud.TOOLTIP.ADDREMOVE");
 			const actions = [
 				{
 					id,
 					name,
 					listName,
 					encodedValue,
-					// tooltip,
+					tooltip,
 				},
 			];
 			// TAH Core method to add actions to the action list
@@ -372,14 +381,14 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
 			const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${name}`;
 			const encodedValue = [actionTypeId, id].join(this.delimiter);
-			// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.ConButtons");
+			const tooltip = coreModule.api.Utils.i18n("tokenActionHud.TOOLTIP.ADDREMOVE");
 			const actions = [
 				{
 					id,
 					name,
 					listName,
 					encodedValue,
-					// tooltip,
+					tooltip,
 				},
 			];
 			// TAH Core method to add actions to the action list

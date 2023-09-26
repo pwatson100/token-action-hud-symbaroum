@@ -1,3 +1,13 @@
 {
-  "tokenActionHud": {}
+	"tokenActionHud": {
+		"TOOLTIP": {
+			"ADDREMOVE": "Left click to add. Right click to remove"
+		},
+		"settings": {
+			"displayUnequipped": {
+				"hint": "Choose whether to display Inactive items on the HUD",
+				"name": "Display Inactive"
+			}
+		}
+	}
 }
