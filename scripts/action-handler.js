@@ -121,7 +121,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
 		async #buildInventory() {
 
-			const invItems = this.actor.items.filter((item) => item.type !== "mysticalPower" && item.type !== "trait" && item.type !== "armor" && item.type != "ability");
+			const invItems = this.actor.items.filter((item) => item.system.isGear && !item.system.isArmor);
 
 			if (invItems.size === 0) {
 				return;
