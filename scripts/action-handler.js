@@ -213,7 +213,6 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			if (traits.length === 0) 
 			{
 				// Remove group Trait if there are not traits
-				this.removeGroup({ id:"traits" })
 				return;
 			}
 
@@ -252,11 +251,10 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		async #buildAbilities() {
 			const actionType = "ability";
 			// Get traits
-			const abilityList = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
+			const abilities = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
 
 			// Exit if there are no abilities with scripts
 			if (abilities.length === 0) {
-				this.removeGroup({ id:"abilities" });
 				return;
 			}
 
@@ -296,7 +294,6 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			let powers = this.actor.items.filter((item) => item.type === "mysticalPower" && item.system?.hasScript);
 			// Exit if there are no abilities with scripts
 			if (powers.length === 0) {
-				this.removeGroup({ id:'mysticalpower'});
 				return;
 			}
 
