@@ -68,7 +68,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
          * @returns {object} The default layout and groups
          */
         async doRegisterDefaultFlags () {
-            return DEFAULTS
+            return DEFAULTS;
         }
     }
 })

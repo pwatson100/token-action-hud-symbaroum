@@ -123,8 +123,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {string} actionId The action id
 		 */
 		async #handleTraitAction(event, actor, actionId) {
-			let usedPower = actor.items.filter((item) => item.name === actionId);
-			actor.usePower(usedPower[0]);
+			let usedPower = actor.items.get(actionId);
+			actor.usePower(usedPower);
 		}
 
 		/**
@@ -135,8 +135,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {string} actionId The action id
 		 */
 		async #handleAbilityAction(event, actor, actionId) {
-			let usedPower = actor.items.filter((item) => item.name === actionId);
-			actor.usePower(usedPower[0]);
+			let usedPower = actor.items.get(actionId);
+			actor.usePower(usedPower);
 		}
 
 		/**
@@ -147,8 +147,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {string} actionId The action id
 		 */
 		async #handleMysticalPowerAction(event, actor, actionId) {
-			let usedPower = actor.items.filter((item) => item.name === actionId);
-			actor.usePower(usedPower[0]);
+			let usedPower = actor.items.get(actionId);
+			actor.usePower(usedPower);
 		}
 
 		/**
