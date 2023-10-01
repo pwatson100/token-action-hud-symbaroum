@@ -120,21 +120,30 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		}
 
 		async #buildInventory() {
-			if (this.items.size === 0) return;
+
+			const invItems = this.actor.items.filter((item) => (item.system.isGear || item.system.isEquipement) && !item.system.isArmor);
+
+			if (invItems.size === 0) {
+				return;
+			}
 
 			const actionTypeId = "item";
 			const inventoryMap = new Map();
 
-			for (const [itemId, itemData] of this.items) {
+			for (const itemData of invItems) {
 				let type = itemData.type;
+				const itemId = itemData.id;
 
 				if (
 					((type === "weapon" || type === "equipment") && itemData.system?.isActive) ||
 					((type === "weapon" || type === "equipment") && this.displayUnequipped)
 				) {
+					// For now - ignore this and add them separately once we have support for selecting the power to use
+					/*
 					if (itemData.system?.isArtifact || itemData.system?.isArtifact === "artifact") {
 						type = "artifact";
 					}
+					*/ 
 					const typeMap = inventoryMap.get(type) ?? new Map();
 					typeMap.set(itemId, itemData);
 					inventoryMap.set(type, typeMap);
@@ -185,20 +194,13 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const name = this.actor.system.combat.name;
 			const img = this.actor.system.combat.img;
 			const encodedValue = [actionTypeId, this.actor.system.combat.id].join(this.delimiter);
-			const typeMap = new Map();
-			const itemData = duplicate(this.actor.system.combat);
-			itemData.type = type;
-			typeMap.set(itemId, itemData);
-
-			const actions = [...typeMap].map(([itemId, itemData]) => {
-				return {
+			const actions = [{
 					itemId,
 					name,
 					img,
 					listName,
-					encodedValue,
-				};
-			});
+					encodedValue
+			}];
 			this.addActions(actions, groupData);
 		}
 
@@ -207,22 +209,23 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			// Get traits
 			const traits = this.actor.items.filter((item) => item.type === "trait" && item.system?.hasScript);
 			// Exit if there are no traits with scripts
-			if (traits.length === 0) return;
+
+			if (traits.length === 0) 
+			{
+				// Remove group Trait if there are not traits
+				return;
+			}
 
 			// Get actions
-			const actions = Object.entries(traits)
-				.map((trait) => {
+			const actions = traits.map((trait) => {
 					try {
-						const lookupId = trait[1].name.toLowerCase().replace(/\s/g, "");
-						const id = trait[1].name;
-						let name = `${coreModule.api.Utils.i18n(game.symbaroum.config.traitsList[lookupId])}`;
-						if (name === "undefined") {
-							name = trait[1].name;
-						}
+						const id = trait.id;
+						let name = trait.name; 
+
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
-						const listName = `${actionTypeName}${coreModule.api.Utils.i18n(game.symbaroum.config.traitsList[lookupId])}`;
+						const listName = `${actionTypeName}${name}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
-						const img = coreModule.api.Utils.getImage(trait[1].img);
+						const img = coreModule.api.Utils.getImage(trait.img);
 
 						return {
 							id,
@@ -236,8 +239,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 						coreModule.api.Logger.error(trait);
 						return null;
 					}
-				})
-				.filter((trait) => !!trait);
+				});
 
 			// Create group data
 			const groupData = { id: "traits", type: "system" };
@@ -249,25 +251,22 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		async #buildAbilities() {
 			const actionType = "ability";
 			// Get traits
-			const abilityList = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
+			const abilities = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
 
-			// Exit if there are no abilityList with scripts
-			if (abilityList.length === 0) return;
+			// Exit if there are no abilities with scripts
+			if (abilities.length === 0) {
+				return;
+			}
 
 			// Get actions
-			const actions = Object.entries(abilityList)
-				.map((ability) => {
+			const actions = abilities.map((ability) => {
 					try {
-						const lookupId = ability[1].name.toLowerCase().replace(/\s/g, "");
-						const id = ability[1].name;
-						let name = `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
-						if (name === "undefined") {
-							name = ability[1].name;
-						}
+						const id = ability.id;
+						let name = ability.name; // `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
-						const listName = `${actionTypeName}${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
+						const listName = `${actionTypeName}${name}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
-						const img = coreModule.api.Utils.getImage(ability[1].img);
+						const img = coreModule.api.Utils.getImage(ability.img);
 						return {
 							id,
 							name,
@@ -280,8 +279,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 						coreModule.api.Logger.error(ability);
 						return null;
 					}
-				})
-				.filter((ability) => !!ability);
+				});
 
 			// Create group data
 			const groupData = { id: "abilities", type: "system" };
@@ -295,22 +293,19 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			// Get traits
 			let powers = this.actor.items.filter((item) => item.type === "mysticalPower" && item.system?.hasScript);
 			// Exit if there are no abilities with scripts
-			if (powers.length === 0) return;
+			if (powers.length === 0) {
+				return;
+			}
 
 			// Get actions
-			const actions = Object.entries(powers)
-				.map((power) => {
+			const actions = powers.map((power) => {
 					try {
-						const lookupId = power[1].name.toLowerCase().replace(/\s/g, "");
-						const id = power[1].name;
-						let name = `${coreModule.api.Utils.i18n(game.symbaroum.config.powersList[lookupId])}`;
-						if (name === "undefined") {
-							name = power[1].name;
-						}
+						const id = power.id;
+						const name = power.name;						
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
-						const listName = `${actionTypeName}${coreModule.api.Utils.i18n(game.symbaroum.config.powersList[lookupId])}`;
+						const listName = `${actionTypeName}${power.name}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
-						const img = coreModule.api.Utils.getImage(power[1].img);
+						const img = coreModule.api.Utils.getImage(power.img);
 						return {
 							id,
 							name,
@@ -323,8 +318,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 						coreModule.api.Logger.error(power);
 						return null;
 					}
-				})
-				.filter((power) => !!power);
+				});
 
 			// Create group data
 			const groupData = { id: "mysticalpower", type: "system" };

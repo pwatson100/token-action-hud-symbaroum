@@ -11,6 +11,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		group.name = coreModule.api.Utils.i18n(group.name);
 		group.listName = `Group: ${coreModule.api.Utils.i18n(group.listName ?? group.name)}`;
 	});
+	
 	const groupsArray = Object.values(groups);
 	DEFAULTS = {
 		layout: [
