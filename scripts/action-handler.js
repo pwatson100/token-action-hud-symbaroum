@@ -252,7 +252,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		async #buildAbilities() {
 			const actionType = "ability";
 			// Get traits
-			const abilities = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
+			const abilityList = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
 
 			// Exit if there are no abilities with scripts
 			if (abilities.length === 0) {
@@ -289,6 +289,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			// Add actions to HUD
 			this.addActions(actions, groupData);
 		}
+
 		async #buildMysticalPowers() {
 			const actionType = "mysticalpower";
 			// Get traits
