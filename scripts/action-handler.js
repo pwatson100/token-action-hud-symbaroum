@@ -121,7 +121,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
 		async #buildInventory() {
 
-			const invItems = this.actor.items.filter((item) => item.system.isGear && !item.system.isArmor);
+			const invItems = this.actor.items.filter((item) => (item.system.isGear || item.system.isEquipement) && !item.system.isArmor);
 
 			if (invItems.size === 0) {
 				return;
@@ -138,9 +138,12 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 					((type === "weapon" || type === "equipment") && itemData.system?.isActive) ||
 					((type === "weapon" || type === "equipment") && this.displayUnequipped)
 				) {
+					// For now - ignore this and add them separately once we have support for selecting the power to use
+					/*
 					if (itemData.system?.isArtifact || itemData.system?.isArtifact === "artifact") {
 						type = "artifact";
 					}
+					*/ 
 					const typeMap = inventoryMap.get(type) ?? new Map();
 					typeMap.set(itemId, itemData);
 					inventoryMap.set(type, typeMap);
