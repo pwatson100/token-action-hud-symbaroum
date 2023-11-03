@@ -1,3 +1,8 @@
+Version 1.0.1
+BREAKING CHANGE: This will not work with versions of TAH Core below 1.5
+Now compatible with Token Action HUD Core 1.5
+
+
 Version 1.0.0
 Initial release
 
