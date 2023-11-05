@@ -12,7 +12,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {object} event        The event
 		 * @param {string} encodedValue The encoded value
 		 */
-		async doHandleActionEvent(event, encodedValue) {
+		async handleActionClick(event, encodedValue) {
 			const payload = encodedValue.split("|");
 
 			if (payload.length !== 2) {
@@ -25,7 +25,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const renderable = [];
 
 			if (renderable.includes(actionTypeId) && this.isRenderItem()) {
-				return this.doRenderItem(this.actor, actionId);
+				return this.renderItem(this.actor, actionId);
 			}
 
 			const knownCharacters = ["player", "monster"];
@@ -74,7 +74,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 											await this.#handleWeaponAction(event, actor, actionId, actorItem);
 											break;
 										default:
-											await this.doRenderItem(this.actor, actionId);
+											await this.renderItem(this.actor, actionId);
 											break;
 									}
 								}
@@ -96,7 +96,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 								break;
 
 							default:
-								await this.doRenderItem(this.actor, actionId);
+								await this.renderItem(this.actor, actionId);
 								break;
 						}
 					}
