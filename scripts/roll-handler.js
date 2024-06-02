@@ -182,6 +182,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {string} actionId The action id
 		 */
 		async #adjustAttribute(actor, property, valueName) {
+			console.log(actor, property, valueName);
 			let value = actor.system.health[property][valueName];
 			let max = actor.system.health[property].max;
 
@@ -193,7 +194,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				value++;
 			}
 
-			let update = { data: { health: { [property]: { [valueName]: value } } } };
+			let update = { system: { health: { [property]: { [valueName]: value } } } };
 
 			await actor.update(update);
 		}
