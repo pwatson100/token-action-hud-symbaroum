@@ -1,10 +1,10 @@
 // System Module Imports
-import { ACTION_TYPE, ITEM_TYPE, CONDITION } from "./constants.js";
-import { Utils } from "./utils.js";
+import { ACTION_TYPE, ITEM_TYPE, CONDITION } from './constants.js';
+import { Utils } from './utils.js';
 
 export let ActionHandler = null;
 
-Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
+Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 	/**
 	 * Extends Token Action HUD Core's ActionHandler class and builds system-defined actions for the HUD
 	 */
@@ -34,8 +34,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			this.actorType = this.actor?.type;
 
 			// Settings
-			this.displayUnequipped = Utils.getSetting("displayUnequipped");
-			this.showtooltip = Utils.getSetting("showtooltip");
+			this.displayUnequipped = Utils.getSetting('displayUnequipped');
+			this.showtooltip = Utils.getSetting('showtooltip');
 
 			// Set items variable
 			if (this.actor) {
@@ -45,8 +45,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			}
 
 			switch (this.actorType) {
-				case "player":
-				case "monster":
+				case 'player':
+				case 'monster':
 					{
 						await this.#buildPlayerActions();
 					}
@@ -79,7 +79,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		async #buildMultipleTokenActions() {}
 
 		async #buildAttributes() {
-			const actionType = "attributes";
+			const actionType = 'attributes';
 
 			// Get skills
 			const attributes = {
@@ -93,8 +93,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				.map((attributes) => {
 					try {
 						const id = attributes[0];
-						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.attributeLabels[id])}` + " " + "-" + " " + this.actor.system.attributes[id].value;
-						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
+						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.attributeLabels[id])}` + ' ' + '-' + ' ' + this.actor.system.attributes[id].value;
+						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
 						const listName = `${actionTypeName}${game.symbaroum.config.attributes[id]}`;
 						const encodedValue = [actionType, id].join(this.delimiter);
 						// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.LEFTCLICKTOROLL");
@@ -113,21 +113,20 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				.filter((attributes) => !!attributes);
 
 			// Create group data
-			const groupData = { id: "attributes", type: "system" };
+			const groupData = { id: 'attributes', type: 'system' };
 
 			// Add actions to HUD
 			this.addActions(actions, groupData);
 		}
 
 		async #buildInventory() {
-
 			const invItems = this.actor.items.filter((item) => (item.system.isGear || item.system.isEquipement) && !item.system.isArmor);
 
 			if (invItems.size === 0) {
 				return;
 			}
 
-			const actionTypeId = "item";
+			const actionTypeId = 'item';
 			const inventoryMap = new Map();
 
 			for (const itemData of invItems) {
@@ -135,15 +134,15 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 				const itemId = itemData.id;
 
 				if (
-					((type === "weapon" || type === "equipment") && itemData.system?.isActive) ||
-					((type === "weapon" || type === "equipment") && this.displayUnequipped)
+					((type === 'weapon' || type === 'equipment') && itemData.system?.isActive) ||
+					((type === 'weapon' || type === 'equipment') && this.displayUnequipped)
 				) {
 					// For now - ignore this and add them separately once we have support for selecting the power to use
 					/*
 					if (itemData.system?.isArtifact || itemData.system?.isArtifact === "artifact") {
 						type = "artifact";
 					}
-					*/ 
+					*/
 					const typeMap = inventoryMap.get(type) ?? new Map();
 					typeMap.set(itemId, itemData);
 					inventoryMap.set(type, typeMap);
@@ -154,7 +153,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
 					if (!groupId) continue;
 
-					const groupData = { id: groupId, type: "system" };
+					const groupData = { id: groupId, type: 'system' };
 
 					// Get actions
 					const actions = [...typeMap].map(([itemId, itemData]) => {
@@ -163,7 +162,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 						const img = coreModule.api.Utils.getImage(itemData);
 						const name = itemData.name;
 						const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
-						const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${name}`;
+						const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
 						const encodedValue = [actionTypeId, id].join(this.delimiter);
 						// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.LEFTCLICKTOROLL");
 
@@ -184,74 +183,75 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		}
 
 		async #buildArmor() {
-			const actionTypeId = "item";
-			const type = "armor";
+			const actionTypeId = 'item';
+			const type = 'armor';
 			const groupId = ITEM_TYPE[type]?.groupId;
-			const groupData = { id: groupId, type: "system" };
+			const groupData = { id: groupId, type: 'system' };
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
-			const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${this.actor.system.combat.name}`;
+			const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${this.actor.system.combat.name}`;
 			const itemId = this.actor.system.combat.id;
 			const name = this.actor.system.combat.name;
 			const img = this.actor.system.combat.img;
 			const encodedValue = [actionTypeId, this.actor.system.combat.id].join(this.delimiter);
-			const actions = [{
+			const actions = [
+				{
 					itemId,
 					name,
 					img,
 					listName,
-					encodedValue
-			}];
+					encodedValue,
+				},
+			];
 			this.addActions(actions, groupData);
 		}
 
 		async #buildTraits() {
-			const actionType = "trait";
+			const actionType = 'trait';
 			// Get traits
-			const traits = this.actor.items.filter((item) => item.type === "trait" && item.system?.hasScript);
+			const traits = this.actor.items.filter((item) => item.type === 'trait' && item.system?.hasScript);
 			// Exit if there are no traits with scripts
 
-			if (traits.length === 0) 
-			{
+			if (traits.length === 0) {
 				// Remove group Trait if there are not traits
 				return;
 			}
 
 			// Get actions
 			const actions = traits.map((trait) => {
-					try {
-						const id = trait.id;
-						let name = trait.name; 
+				try {
+					const id = trait.id;
+					let name = trait.name;
 
-						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
-						const listName = `${actionTypeName}${name}`;
-						const encodedValue = [actionType, id].join(this.delimiter);
-						const img = coreModule.api.Utils.getImage(trait.img);
+					const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
+					const listName = `${actionTypeName}${name}`;
+					const encodedValue = [actionType, id].join(this.delimiter);
+					const img = coreModule.api.Utils.getImage(trait.img);
 
-						return {
-							id,
-							name,
-							encodedValue,
-							img,
-							listName,
-							// tooltip,
-						};
-					} catch (error) {
-						coreModule.api.Logger.error(trait);
-						return null;
-					}
-				});
+					return {
+						id,
+						name,
+						encodedValue,
+						img,
+						listName,
+						// tooltip,
+					};
+				} catch (error) {
+					coreModule.api.Logger.error(trait);
+					return null;
+				}
+			});
 
 			// Create group data
-			const groupData = { id: "traits", type: "system" };
+			const groupData = { id: 'traits', type: 'system' };
 
 			// Add actions to HUD
 			this.addActions(actions, groupData);
 		}
 
 		async #buildAbilities() {
-			const actionType = "ability";
+			const actionType = 'ability';
 			// Get traits
-			const abilities = this.actor.items.filter((item) => item.type === "ability" && item.system?.script);
+			const abilities = this.actor.items.filter((item) => item.type === 'ability' && item.system?.script);
 
 			// Exit if there are no abilities with scripts
 			if (abilities.length === 0) {
@@ -260,38 +260,38 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
 			// Get actions
 			const actions = abilities.map((ability) => {
-					try {
-						const id = ability.id;
-						let name = ability.name; // `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
-						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
-						const listName = `${actionTypeName}${name}`;
-						const encodedValue = [actionType, id].join(this.delimiter);
-						const img = coreModule.api.Utils.getImage(ability.img);
-						return {
-							id,
-							name,
-							encodedValue,
-							img,
-							listName,
-							// tooltip,
-						};
-					} catch (error) {
-						coreModule.api.Logger.error(ability);
-						return null;
-					}
-				});
+				try {
+					const id = ability.id;
+					let name = ability.name; // `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
+					const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
+					const listName = `${actionTypeName}${name}`;
+					const encodedValue = [actionType, id].join(this.delimiter);
+					const img = coreModule.api.Utils.getImage(ability.img);
+					return {
+						id,
+						name,
+						encodedValue,
+						img,
+						listName,
+						// tooltip,
+					};
+				} catch (error) {
+					coreModule.api.Logger.error(ability);
+					return null;
+				}
+			});
 
 			// Create group data
-			const groupData = { id: "abilities", type: "system" };
+			const groupData = { id: 'abilities', type: 'system' };
 
 			// Add actions to HUD
 			this.addActions(actions, groupData);
 		}
 
 		async #buildMysticalPowers() {
-			const actionType = "mysticalpower";
+			const actionType = 'mysticalpower';
 			// Get traits
-			let powers = this.actor.items.filter((item) => item.type === "mysticalPower" && item.system?.hasScript);
+			let powers = this.actor.items.filter((item) => item.type === 'mysticalPower' && item.system?.hasScript);
 			// Exit if there are no abilities with scripts
 			if (powers.length === 0) {
 				return;
@@ -299,47 +299,47 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
 			// Get actions
 			const actions = powers.map((power) => {
-					try {
-						const id = power.id;
-						const name = power.name;						
-						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? "";
-						const listName = `${actionTypeName}${power.name}`;
-						const encodedValue = [actionType, id].join(this.delimiter);
-						const img = coreModule.api.Utils.getImage(power.img);
-						return {
-							id,
-							name,
-							encodedValue,
-							img,
-							listName,
-							// tooltip,
-						};
-					} catch (error) {
-						coreModule.api.Logger.error(power);
-						return null;
-					}
-				});
+				try {
+					const id = power.id;
+					const name = power.name;
+					const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
+					const listName = `${actionTypeName}${power.name}`;
+					const encodedValue = [actionType, id].join(this.delimiter);
+					const img = coreModule.api.Utils.getImage(power.img);
+					return {
+						id,
+						name,
+						encodedValue,
+						img,
+						listName,
+						// tooltip,
+					};
+				} catch (error) {
+					coreModule.api.Logger.error(power);
+					return null;
+				}
+			});
 
 			// Create group data
-			const groupData = { id: "mysticalpower", type: "system" };
+			const groupData = { id: 'mysticalpower', type: 'system' };
 
 			// Add actions to HUD
 			this.addActions(actions, groupData);
 		}
 
 		async #buildToughness() {
-			const actionTypeId = "toughness";
-			const groupData = { id: "utility", type: "system" };
+			const actionTypeId = 'toughness';
+			const groupData = { id: 'utility', type: 'system' };
 			const value = this.actor.system?.health.toughness.value;
 			const max = this.actor.system?.health.toughness.max;
 
 			// Get actions
 			const id = actionTypeId;
-			const name = coreModule.api.Utils.i18n("HEALTH.TOUGHNESS") + " - " + (max > 0 ? `${value ?? 0}/${max}` : "");
+			const name = coreModule.api.Utils.i18n('HEALTH.TOUGHNESS') + ' - ' + (max > 0 ? `${value ?? 0}/${max}` : '');
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
-			const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${name}`;
+			const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
 			const encodedValue = [actionTypeId, id].join(this.delimiter);
-			const tooltip = coreModule.api.Utils.i18n("tokenActionHud.TOOLTIP.ADDREMOVE");
+			const tooltip = coreModule.api.Utils.i18n('tokenActionHud.TOOLTIP.ADDREMOVE');
 			const actions = [
 				{
 					id,
@@ -354,29 +354,29 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		}
 
 		async #buildTempCorruption() {
-			const actionTypeId = "corruption";
-			let name = "";
-			const groupData = { id: "utility", type: "system" };
+			const actionTypeId = 'corruption';
+			let name = '';
+			const groupData = { id: 'utility', type: 'system' };
 			const value = this.actor.system?.health.corruption.value;
 			const max = this.actor.system?.health.corruption.max;
 
 			// Get actions
 			const id = actionTypeId;
 			if (max === 0) {
-				name = coreModule.api.Utils.i18n("HEALTH.CORRUPTION_THROUGHLY").capitalize();
+				name = coreModule.api.Utils.i18n('HEALTH.CORRUPTION_THROUGHLY').capitalize();
 			} else {
 				name =
-					coreModule.api.Utils.i18n("HEALTH.CORRUPTION_TEMPORARY") +
-					" " +
-					coreModule.api.Utils.i18n("HEALTH.CORRUPTION") +
-					" - " +
-					(max > 0 ? `${value ?? 0}/${max}` : "");
+					coreModule.api.Utils.i18n('HEALTH.CORRUPTION_TEMPORARY') +
+					' ' +
+					coreModule.api.Utils.i18n('HEALTH.CORRUPTION') +
+					' - ' +
+					(max > 0 ? `${value ?? 0}/${max}` : '');
 			}
 
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
-			const listName = `${actionTypeName ? `${actionTypeName}: ` : ""}${name}`;
+			const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
 			const encodedValue = [actionTypeId, id].join(this.delimiter);
-			const tooltip = coreModule.api.Utils.i18n("tokenActionHud.TOOLTIP.ADDREMOVE");
+			const tooltip = coreModule.api.Utils.i18n('tokenActionHud.TOOLTIP.ADDREMOVE');
 			const actions = [
 				{
 					id,
@@ -396,7 +396,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @returns {object}
 		 */
 		async #getActors() {
-			const allowedTypes = ["player", "monster"];
+			const allowedTypes = ['player', 'monster'];
 			const actors = canvas.tokens.controlled.filter((token) => token.actor).map((token) => token.actor);
 			if (actors.every((actor) => allowedTypes.includes(actor.type))) {
 				return actors;
@@ -411,7 +411,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @returns {object}
 		 */
 		async #getTokens() {
-			const allowedTypes = ["player", "monster"];
+			const allowedTypes = ['player', 'monster'];
 			const tokens = canvas.tokens.controlled;
 			const actors = tokens.filter((token) => token.actor).map((token) => token.actor);
 			if (actors.every((actor) => allowedTypes.includes(actor.type))) {
@@ -427,8 +427,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {*} name   The condition name
 		 * @returns {object} The tooltip data
 		 */
-		#getConditionTooltipData(id, name) {
-			if (this.showtooltip === false) return "";
+		async #getConditionTooltipData(id, name) {
+			if (this.showtooltip === false) return '';
 			const description = CONDITION[id] ? CONDITION[id]?.description : null;
 			return {
 				name,
@@ -440,8 +440,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @param {object} tooltipData The tooltip data
 		 * @returns {string}           The tooltip
 		 */
-		#getTooltip(tooltipData) {
-			if (this.showtooltip === false) return "";
+		async #getTooltip(tooltipData) {
+			if (this.showtooltip === false) return '';
 			// if (typeof tooltipData === 'string') return tooltipData;
 
 			const name = coreModule.api.Utils.i18n(tooltipData.name);
@@ -451,47 +451,47 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 			const nameHtml = `<h3>${name}</h3>`;
 
 			const description =
-				tooltipData?.descriptionLocalised ?? TextEditor.enrichHTML(coreModule.api.Utils.i18n(tooltipData?.description ?? ""), { async: false });
+				tooltipData?.descriptionLocalised ?? (await TextEditor.enrichHTML(coreModule.api.Utils.i18n(tooltipData?.description ?? ''), { async: false }));
 
 			const rarityHtml = tooltipData?.rarity
 				? `<span class="tah-tag ${tooltipData.rarity}">${coreModule.api.Utils.i18n(RARITY[tooltipData.rarity])}</span>`
-				: "";
+				: '';
 
 			const propertiesHtml = tooltipData?.properties
 				? `<div class="tah-properties">${tooltipData.properties
 						.map((property) => `<span class="tah-property">${coreModule.api.Utils.i18n(property)}</span>`)
-						.join("")}</div>`
-				: "";
+						.join('')}</div>`
+				: '';
 
 			const traitsHtml = tooltipData?.traits
-				? tooltipData.traits.map((trait) => `<span class="tah-tag">${coreModule.api.Utils.i18n(trait.label ?? trait)}</span>`).join("")
-				: "";
+				? tooltipData.traits.map((trait) => `<span class="tah-tag">${coreModule.api.Utils.i18n(trait.label ?? trait)}</span>`).join('')
+				: '';
 
 			const traits2Html = tooltipData?.traits2
-				? tooltipData.traits2.map((trait) => `<span class="tah-tag tah-tag-secondary">${coreModule.api.Utils.i18n(trait.label ?? trait)}</span>`).join("")
-				: "";
+				? tooltipData.traits2.map((trait) => `<span class="tah-tag tah-tag-secondary">${coreModule.api.Utils.i18n(trait.label ?? trait)}</span>`).join('')
+				: '';
 
 			const traitsAltHtml = tooltipData?.traitsAlt
-				? tooltipData.traitsAlt.map((trait) => `<span class="tah-tag tah-tag-alt">${coreModule.api.Utils.i18n(trait.label)}</span>`).join("")
-				: "";
+				? tooltipData.traitsAlt.map((trait) => `<span class="tah-tag tah-tag-alt">${coreModule.api.Utils.i18n(trait.label)}</span>`).join('')
+				: '';
 
 			const modifiersHtml = tooltipData?.modifiers
 				? `<div class="tah-tags">${tooltipData.modifiers
 						.filter((modifier) => modifier.enabled)
 						.map((modifier) => {
 							const label = coreModule.api.Utils.i18n(modifier.label);
-							const sign = modifier.modifier >= 0 ? "+" : "";
-							const mod = `${sign}${modifier.modifier ?? ""}`;
+							const sign = modifier.modifier >= 0 ? '+' : '';
+							const mod = `${sign}${modifier.modifier ?? ''}`;
 							return `<span class="tah-tag tah-tag-transparent">${label} ${mod}</span>`;
 						})
-						.join("")}</div>`
-				: "";
+						.join('')}</div>`
+				: '';
 
-			const tagsJoined = [rarityHtml, traitsHtml, traits2Html, traitsAltHtml].join("");
+			const tagsJoined = [rarityHtml, traitsHtml, traits2Html, traitsAltHtml].join('');
 
-			const tagsHtml = tagsJoined ? `<div class="tah-tags">${tagsJoined}</div>` : "";
+			const tagsHtml = tagsJoined ? `<div class="tah-tags">${tagsJoined}</div>` : '';
 
-			const headerTags = tagsHtml || modifiersHtml ? `<div class="tah-tags-wrapper">${tagsHtml}${modifiersHtml}</div>` : "";
+			const headerTags = tagsHtml || modifiersHtml ? `<div class="tah-tags-wrapper">${tagsHtml}${modifiersHtml}</div>` : '';
 
 			if (!description && !tagsHtml && !modifiersHtml) return name;
 
