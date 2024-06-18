@@ -1,3 +1,6 @@
+Version 1.1.0
+FVTT V12 Compatible. 
+
 Version 1.0.1
 BREAKING CHANGE: This will not work with versions of TAH Core below 1.5
 Now compatible with Token Action HUD Core 1.5

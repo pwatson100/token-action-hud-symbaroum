@@ -29,7 +29,7 @@
 				"compatibility": [
 					{
 						"minimum": "4.2.1",
-						"verified": "4.2.1"
+						"verified": "5.0.0"
 					}
 				]
 			}
