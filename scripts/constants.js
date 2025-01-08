@@ -13,9 +13,10 @@ export const CORE_MODULE = {
 };
 
 /**
- * Core module version required by the system module
+ * Core module version required by the system module.
+ * No longer used
  */
-export const REQUIRED_CORE_MODULE_VERSION = '2.0.4';
+export const REQUIRED_CORE_MODULE_VERSION = '2.0.10';
 
 /**
  * Action types

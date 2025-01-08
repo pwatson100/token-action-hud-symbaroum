@@ -372,8 +372,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 			const actionTypeId = 'corruption';
 			let name = '';
 			const groupData = { id: 'utility', type: 'system' };
-			let cValue = this.actor.system?.health.corruption.value;
-			const max = this.actor.system?.health.corruption.max;
+			let cValue = this.actor.system?.health.corruption.temporary;
+			const max = this.actor.system?.health.corruption.max - this.actor.system?.health.corruption.permanent;
 
 			// Get actions
 			const id = actionTypeId;
