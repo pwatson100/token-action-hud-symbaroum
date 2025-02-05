@@ -16,3 +16,6 @@ HUD only displays active weapons, armor, artifacts & equipment unless "Display A
 Tooltips added for Toughness and Corruption listings (English only).
 Put in defensive code for traits/powers/mystical Powers not defined (or abbreviated name) in config.traitsList config.abilitiesList & config.powersList.
 
+Version 1.2.0
+BREAKING CHANGE: This will not work with versions of TAH Core below V2 
+Moved away from using the roll handler.  all roll logic is now in the action handler.

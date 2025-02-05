@@ -70,7 +70,6 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 				this.#buildAbilities(),
 				this.#buildMysticalPowers(),
 				this.#buildInventory(),
-				this.#buildArmor(),
 				this.#buildToughness(),
 				this.#buildTempCorruption(),
 			]);
@@ -96,14 +95,13 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 						const name = `${coreModule.api.Utils.i18n(game.symbaroum.config.attributeLabels[id])}` + ' ' + '-' + ' ' + this.actor.system.attributes[id].value;
 						const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
 						const listName = `${actionTypeName}${game.symbaroum.config.attributes[id]}`;
-						const encodedValue = [actionType, id].join(this.delimiter);
-						// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.LEFTCLICKTOROLL");
 						return {
 							id,
 							name,
-							encodedValue,
 							listName,
-							// tooltip,
+							onClick: async () => {
+								this.actor.rollAttribute(id);
+							},
 						};
 					} catch (error) {
 						coreModule.api.Logger.error(attributes);
@@ -120,7 +118,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 		}
 
 		async #buildInventory() {
-			const invItems = this.actor.items.filter((item) => (item.system.isGear || item.system.isEquipement) && !item.system.isArmor);
+			const armorActions = [];
+			const invItems = this.actor.items.filter((item) => item.system.isGear || (item.system.isEquipement && !item.system.isArmor));
 
 			if (invItems.size === 0) {
 				return;
@@ -149,30 +148,39 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 				}
 
 				for (const [type, typeMap] of inventoryMap) {
-					const groupId = ITEM_TYPE[type]?.groupId;
+					let groupId = ITEM_TYPE[type]?.groupId;
 
 					if (!groupId) continue;
 
 					const groupData = { id: groupId, type: 'system' };
 
 					// Get actions
-					const actions = [...typeMap].map(([itemId, itemData]) => {
+					let actions = [...typeMap].map(([itemId, itemData]) => {
 						// let name = "";
 						const id = itemId;
-						const img = coreModule.api.Utils.getImage(itemData);
-						const name = itemData.name;
+						const actorItem = this.actor.items.get(id);
+
+						let img = coreModule.api.Utils.getImage(itemData);
+						let name = itemData.name;
 						const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
-						const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
-						const encodedValue = [actionTypeId, id].join(this.delimiter);
-						// const tooltip = coreModule.api.Utils.i18n("ALIENRPG.LEFTCLICKTOROLL");
+						let listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
 
 						return {
 							id,
 							name,
 							img,
 							listName,
-							encodedValue,
-							// tooltip,
+							onClick: async () => {
+								switch (actorItem.type) {
+									case 'weapon':
+										const usedItem = this.actor.system.weapons.filter((item) => item.id === id);
+										this.actor.rollWeapon(usedItem[0]);
+										break;
+									default:
+										await actorItem.sheet.render(true);
+										break;
+								}
+							},
 						};
 					});
 
@@ -180,29 +188,25 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 					this.addActions(actions, groupData);
 				}
 			}
-		}
-
-		async #buildArmor() {
-			const actionTypeId = 'item';
+			//
+			// Now Add any Armor or the No Armor badge
+			//
 			const type = 'armor';
 			const groupId = ITEM_TYPE[type]?.groupId;
-			const groupData = { id: groupId, type: 'system' };
+			const armorGroupData = { id: groupId, type: 'system' };
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
-			const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${this.actor.system.combat.name}`;
-			const itemId = this.actor.system.combat.id;
-			const name = this.actor.system.combat.name;
-			const img = this.actor.system.combat.img;
-			const encodedValue = [actionTypeId, this.actor.system.combat.id].join(this.delimiter);
-			const actions = [
-				{
-					itemId,
-					name,
-					img,
-					listName,
-					encodedValue,
+			armorActions.push({
+				id: this.actor.system.combat.id,
+				name: this.actor.system.combat.name,
+				img: this.actor.system.combat.img,
+				listName: `${actionTypeName ? `${actionTypeName}: ` : ''}${this.actor.system.combat.name}`,
+				onClick: async () => {
+					await this.actor.rollArmor();
 				},
-			];
-			this.addActions(actions, groupData);
+			});
+
+			// TAH Core method to add actions to the action list
+			this.addActions(armorActions, armorGroupData);
 		}
 
 		async #buildTraits() {
@@ -224,16 +228,16 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 
 					const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
 					const listName = `${actionTypeName}${name}`;
-					const encodedValue = [actionType, id].join(this.delimiter);
 					const img = coreModule.api.Utils.getImage(trait.img);
 
 					return {
 						id,
 						name,
-						encodedValue,
 						img,
 						listName,
-						// tooltip,
+						onClick: async () => {
+							this.actor.usePower(trait);
+						},
 					};
 				} catch (error) {
 					coreModule.api.Logger.error(trait);
@@ -262,18 +266,18 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 			const actions = abilities.map((ability) => {
 				try {
 					const id = ability.id;
-					let name = ability.name; // `${coreModule.api.Utils.i18n(game.symbaroum.config.abilitiesList[lookupId])}`;
+					let name = ability.name;
 					const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
 					const listName = `${actionTypeName}${name}`;
-					const encodedValue = [actionType, id].join(this.delimiter);
 					const img = coreModule.api.Utils.getImage(ability.img);
 					return {
 						id,
 						name,
-						encodedValue,
 						img,
 						listName,
-						// tooltip,
+						onClick: async () => {
+							this.actor.usePower(ability);
+						},
 					};
 				} catch (error) {
 					coreModule.api.Logger.error(ability);
@@ -304,15 +308,15 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 					const name = power.name;
 					const actionTypeName = `${coreModule.api.Utils.i18n(ACTION_TYPE[actionType])}: ` ?? '';
 					const listName = `${actionTypeName}${power.name}`;
-					const encodedValue = [actionType, id].join(this.delimiter);
 					const img = coreModule.api.Utils.getImage(power.img);
 					return {
 						id,
 						name,
-						encodedValue,
 						img,
 						listName,
-						// tooltip,
+						onClick: async () => {
+							this.actor.usePower(power);
+						},
 					};
 				} catch (error) {
 					coreModule.api.Logger.error(power);
@@ -330,23 +334,34 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 		async #buildToughness() {
 			const actionTypeId = 'toughness';
 			const groupData = { id: 'utility', type: 'system' };
-			const value = this.actor.system?.health.toughness.value;
+			let tValue = this.actor.system?.health.toughness.value;
 			const max = this.actor.system?.health.toughness.max;
 
 			// Get actions
 			const id = actionTypeId;
-			const name = coreModule.api.Utils.i18n('HEALTH.TOUGHNESS') + ' - ' + (max > 0 ? `${value ?? 0}/${max}` : '');
+			const name = coreModule.api.Utils.i18n('HEALTH.TOUGHNESS') + ' - ' + (max > 0 ? `${tValue ?? 0}/${max}` : '');
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
 			const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
-			const encodedValue = [actionTypeId, id].join(this.delimiter);
 			const tooltip = coreModule.api.Utils.i18n('tokenActionHud.TOOLTIP.ADDREMOVE');
 			const actions = [
 				{
 					id,
 					name,
 					listName,
-					encodedValue,
 					tooltip,
+					onClick: async () => {
+						if (this.isRightClick) {
+							if (tValue <= 0) return;
+							tValue--;
+						} else {
+							if (tValue >= max) return;
+							tValue++;
+						}
+
+						let update = { system: { health: { toughness: { value: tValue } } } };
+
+						await this.actor.update(update);
+					},
 				},
 			];
 			// TAH Core method to add actions to the action list
@@ -357,8 +372,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 			const actionTypeId = 'corruption';
 			let name = '';
 			const groupData = { id: 'utility', type: 'system' };
-			const value = this.actor.system?.health.corruption.value;
-			const max = this.actor.system?.health.corruption.max;
+			let cValue = this.actor.system?.health.corruption.temporary;
+			const max = this.actor.system?.health.corruption.max - this.actor.system?.health.corruption.permanent;
 
 			// Get actions
 			const id = actionTypeId;
@@ -370,20 +385,31 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 					' ' +
 					coreModule.api.Utils.i18n('HEALTH.CORRUPTION') +
 					' - ' +
-					(max > 0 ? `${value ?? 0}/${max}` : '');
+					(max > 0 ? `${cValue ?? 0}/${max}` : '');
 			}
 
 			const actionTypeName = coreModule.api.Utils.i18n(ACTION_TYPE[actionTypeId]);
 			const listName = `${actionTypeName ? `${actionTypeName}: ` : ''}${name}`;
-			const encodedValue = [actionTypeId, id].join(this.delimiter);
 			const tooltip = coreModule.api.Utils.i18n('tokenActionHud.TOOLTIP.ADDREMOVE');
 			const actions = [
 				{
 					id,
 					name,
 					listName,
-					encodedValue,
 					tooltip,
+					onClick: async () => {
+						if (this.isRightClick) {
+							if (cValue <= 0) return;
+							cValue--;
+						} else {
+							if (cValue >= max) return;
+							cValue++;
+						}
+
+						let update = { system: { health: { corruption: { temporary: cValue } } } };
+
+						await this.actor.update(update);
+					},
 				},
 			];
 			// TAH Core method to add actions to the action list

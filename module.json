@@ -5,9 +5,9 @@
 	"authors": [{ "name": "Paul Watson" }, { "name": "Bithir" }, { "name": "Khaali" }],
 	"url": "https://github.com/pwatson100/token-action-hud-symbaroum",
 	"flags": {},
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"compatibility": {
-		"minimum": "10",
+		"minimum": "12",
 		"verified": "12"
 	},
 	"esmodules": ["./scripts/init.js"],
@@ -40,9 +40,9 @@
 				"type": "module",
 				"compatibility": [
 					{
-						"minimum": "1.5.1",
-						"maximum": "1.5",
-						"verified": "1.5.1"
+						"minimum": "2.0.2",
+						"maximum": "2",
+						"verified": "2"
 					}
 				]
 			}

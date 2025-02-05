@@ -1,12 +1,12 @@
 // System Module Imports
-import { ActionHandler } from "./action-handler.js";
-import { RollHandler as Core } from "./roll-handler.js";
-import { DEFAULTS } from "./defaults.js";
-import * as systemSettings from "./settings.js";
+import { ActionHandler } from './action-handler.js';
+import { RollHandler as Core } from './roll-handler.js';
+import { DEFAULTS } from './defaults.js';
+import * as systemSettings from './settings.js';
 
 export let SystemManager = null;
 
-Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
+Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 	/**
 	 * Extends Token Action HUD Core's SystemManager class
 	 */
@@ -17,7 +17,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @override
 		 * @returns {ActionHandler} The ActionHandler instance
 		 */
-		doGetActionHandler() {
+		getActionHandler() {
 			return new ActionHandler();
 		}
 
@@ -29,7 +29,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		 * @returns {object} The available roll handlers
 		 */
 		getAvailableRollHandlers() {
-			const coreTitle = "Core Template";
+			const coreTitle = 'Core Template';
 			const choices = { core: coreTitle };
 			return choices;
 		}
@@ -44,7 +44,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 		getRollHandler(rollHandlerId) {
 			let rollHandler;
 			switch (rollHandlerId) {
-				case "core":
+				case 'core':
 				default:
 					rollHandler = new Core();
 					break;
